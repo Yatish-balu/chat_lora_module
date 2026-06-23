@@ -1,0 +1,271 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─────────────────────────────────────────────────────────────
+   Chatter — Global Design System
+   ───────────────────────────────────────────────────────────── */
+
+@layer base {
+  :root {
+    --color-primary: #7C3AED;
+    --color-secondary: #A855F7;
+    --color-accent: #00E5FF;
+    --color-bg: #0B1020;
+    --color-surface: #111827;
+    --color-card: #1F2937;
+    --scrollbar-thumb: #7C3AED;
+    --scrollbar-track: #111827;
+  }
+
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+  }
+
+  *::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+
+  *::-webkit-scrollbar-track {
+    background: var(--scrollbar-track);
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb);
+    border-radius: 9999px;
+  }
+
+  html {
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+
+  body {
+    background-color: #0B1020;
+    color: #F9FAFB;
+    min-height: 100vh;
+    overflow: hidden;
+  }
+
+  #root {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  ::selection {
+    background-color: rgba(124, 58, 237, 0.4);
+    color: white;
+  }
+}
+
+@layer components {
+  /* ─── Glassmorphism Card ─── */
+  .glass {
+    background: rgba(31, 41, 55, 0.6);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(124, 58, 237, 0.2);
+  }
+
+  .glass-dark {
+    background: rgba(11, 16, 32, 0.8);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(124, 58, 237, 0.15);
+  }
+
+  .glass-card {
+    background: rgba(31, 41, 55, 0.7);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  }
+
+  /* ─── Neon Borders ─── */
+  .neon-border {
+    border: 1px solid rgba(124, 58, 237, 0.5);
+    box-shadow: 0 0 15px rgba(124, 58, 237, 0.2), inset 0 0 15px rgba(124, 58, 237, 0.05);
+  }
+
+  .neon-border-accent {
+    border: 1px solid rgba(0, 229, 255, 0.5);
+    box-shadow: 0 0 15px rgba(0, 229, 255, 0.2), inset 0 0 15px rgba(0, 229, 255, 0.05);
+  }
+
+  /* ─── Gradient Text ─── */
+  .gradient-text {
+    background: linear-gradient(135deg, #7C3AED 0%, #A855F7 50%, #00E5FF 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .gradient-text-primary {
+    background: linear-gradient(135deg, #A855F7 0%, #7C3AED 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* ─── Buttons ─── */
+  .btn-primary {
+    @apply relative overflow-hidden px-6 py-3 rounded-xl font-semibold text-white
+           transition-all duration-300 ease-out
+           bg-gradient-to-r from-primary-500 to-secondary-500
+           hover:shadow-neon-primary hover:scale-[1.02]
+           active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-ghost {
+    @apply px-4 py-2 rounded-xl font-medium text-gray-400
+           hover:text-white hover:bg-white/5
+           transition-all duration-200 ease-out;
+  }
+
+  .btn-icon {
+    @apply p-2 rounded-xl text-gray-400 hover:text-white hover:bg-white/10
+           transition-all duration-200 ease-out;
+  }
+
+  /* ─── Input Fields ─── */
+  .input-field {
+    @apply w-full px-4 py-3 rounded-xl
+           bg-bg-surface border border-white/10
+           text-white placeholder-gray-500
+           focus:outline-none focus:border-primary-500
+           focus:ring-1 focus:ring-primary-500/50
+           transition-all duration-200;
+  }
+
+  /* ─── Message Bubbles ─── */
+  .bubble-sent {
+    @apply rounded-2xl rounded-br-sm px-4 py-2
+           bg-gradient-to-br from-primary-500 to-secondary-600
+           text-white shadow-neon-sm;
+  }
+
+  .bubble-received {
+    @apply rounded-2xl rounded-bl-sm px-4 py-2
+           bg-bg-card border border-white/10
+           text-gray-100;
+  }
+
+  /* ─── Online Status Dot ─── */
+  .status-dot-online {
+    @apply w-2.5 h-2.5 rounded-full bg-success shadow-[0_0_6px_#22C55E];
+  }
+
+  .status-dot-away {
+    @apply w-2.5 h-2.5 rounded-full bg-warning shadow-[0_0_6px_#F59E0B];
+  }
+
+  .status-dot-offline {
+    @apply w-2.5 h-2.5 rounded-full bg-gray-600;
+  }
+
+  /* ─── Sidebar ─── */
+  .sidebar-item {
+    @apply flex items-center gap-3 px-3 py-2.5 rounded-xl
+           cursor-pointer transition-all duration-200
+           hover:bg-white/5 text-gray-400 hover:text-white;
+  }
+
+  .sidebar-item-active {
+    @apply bg-primary-500/10 text-white border border-primary-500/20;
+  }
+
+  /* ─── Scrollable area ─── */
+  .scroll-area {
+    @apply overflow-y-auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(124, 58, 237, 0.5) transparent;
+  }
+}
+
+@layer utilities {
+  .text-gradient {
+    background: linear-gradient(135deg, #7C3AED, #A855F7, #00E5FF);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .bg-mesh {
+    background-color: #0B1020;
+    background-image:
+      radial-gradient(at 40% 20%, rgba(124, 58, 237, 0.12) 0px, transparent 50%),
+      radial-gradient(at 80% 0%, rgba(0, 229, 255, 0.07) 0px, transparent 50%),
+      radial-gradient(at 0% 50%, rgba(168, 85, 247, 0.08) 0px, transparent 50%),
+      radial-gradient(at 80% 50%, rgba(124, 58, 237, 0.06) 0px, transparent 50%),
+      radial-gradient(at 0% 100%, rgba(0, 229, 255, 0.05) 0px, transparent 50%);
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
+/* ─── Typing animation ─── */
+.typing-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #7C3AED;
+  animation: typingBounce 1.2s infinite ease-in-out;
+}
+
+.typing-dot:nth-child(1) { animation-delay: 0s; }
+.typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes typingBounce {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.5; }
+  30% { transform: translateY(-6px); opacity: 1; }
+}
+
+/* ─── Particle canvas ─── */
+#particle-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ─── Message status ticks ─── */
+.tick-sent { color: #9CA3AF; }
+.tick-delivered { color: #9CA3AF; }
+.tick-read { color: #00E5FF; }
+
+/* ─── Neon glow pulse ─── */
+@keyframes neonPulse {
+  0%, 100% { box-shadow: 0 0 5px rgba(124, 58, 237, 0.5); }
+  50% { box-shadow: 0 0 20px rgba(124, 58, 237, 0.9), 0 0 40px rgba(124, 58, 237, 0.4); }
+}
+
+.neon-pulse {
+  animation: neonPulse 2s ease-in-out infinite;
+}
+
+/* ─── Page transitions ─── */
+.page-enter {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+.page-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 300ms ease, transform 300ms ease;
+}
