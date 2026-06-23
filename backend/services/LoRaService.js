@@ -152,18 +152,20 @@ class LoRaService {
    * Send a structured LoRa message over serial
    * Format: msgId|sender|receiver|mode|message|timestamp
    */
+  /**
+   * Send a structured LoRa message over serial
+   * Format: content (STM32 wraps it in SENDER|content|msgId)
+   */
   sendLoRaMessage({ msgId, sender, receiver, content }) {
-    const timestamp = Math.floor(Date.now() / 1000);
-    const packet = `${msgId}|${sender}|${receiver}|lora|${content}|${timestamp}`;
-    return this.sendRaw(packet);
+    return this.sendRaw(content);
   }
 
   /**
    * Send an ACK back to the sender
-   * Format: ACK|msgId|receiverUsername
+   * Format: ACK|msgId
    */
   sendAck(msgId, receiverUsername) {
-    const ack = `ACK|${msgId}|${receiverUsername}`;
+    const ack = `ACK|${msgId}`;
     return this.sendRaw(ack);
   }
 
@@ -190,58 +192,56 @@ class LoRaService {
     const line = rawLine.trim();
 
     // Skip debug lines (from STM32 firmware)
-    if (!line || line.startsWith('DBG:') || line.startsWith('[')) {
+    if (!line || line.startsWith('DBG:') || line.startsWith('[') || line.startsWith('>')) {
       return;
     }
 
-    // Handle ACK packet
-    if (line.startsWith('ACK|')) {
-      await this._handleAck(line);
-      return;
-    }
-
-    // Parse standard message packet
-    // Format: msgId|sender|receiver|mode|message|timestamp|RSSI
     const parts = line.split('|');
-    if (parts.length < 5) {
-      console.warn('[LoRa] Malformed packet:', line);
+
+    // 1. Check if it is an ACK packet: SENDER|ACK|msgId|...
+    if (parts.length >= 3 && parts[1] === 'ACK') {
+      const senderUsername = parts[0];
+      const msgId = parts[2];
+      console.log(`[LoRa] 🔔 ACK received for msgId=${msgId} from ${senderUsername}`);
+      await this._handleAck(msgId, senderUsername);
       return;
     }
 
-    const [msgId, senderUsername, receiverUsername, mode, ...rest] = parts;
-    // content might contain '|' — handle gracefully
-    const rssi = parseInt(rest[rest.length - 1], 10);
-    const timestamp = rest[rest.length - 2];
-    const content = rest.slice(0, rest.length - 2).join('|') || rest[0];
+    // 2. Check if it is a standard packet: SENDER|TEXT|msgId|RSSI
+    if (parts.length === 4) {
+      const senderUsername = parts[0];
+      const content = parts[1];
+      const msgId = parts[2];
+      const rssi = parseInt(parts[3], 10);
 
-    console.log(
-      `[LoRa] 📨 FROM=${senderUsername} TO=${receiverUsername} MSG="${content}" RSSI=${rssi}dBm`
-    );
+      // Determine receiver (using the configured name or fallback)
+      const receiverUsername = process.env.LORA_NODE_NAME || 'laptopb';
 
-    this.stats.messagesReceived++;
-    this.stats.lastActivity = new Date();
+      console.log(
+        `[LoRa] 📨 FROM=${senderUsername} TO=${receiverUsername} MSG="${content}" RSSI=${rssi}dBm`
+      );
 
-    await this._persistAndForward({
-      msgId,
-      senderUsername,
-      receiverUsername,
-      content: content || rest.join('|'),
-      rssi: isNaN(rssi) ? null : rssi,
-      mode: mode || 'lora',
-    });
+      this.stats.messagesReceived++;
+      this.stats.lastActivity = new Date();
+
+      await this._persistAndForward({
+        msgId,
+        senderUsername,
+        receiverUsername,
+        content,
+        rssi: isNaN(rssi) ? null : rssi,
+        mode: 'lora',
+      });
+      return;
+    }
+
+    console.warn('[LoRa] Unrecognized packet format:', line);
   }
 
   /**
    * Handle ACK packet — update message status to 'delivered'
-   * ACK format: ACK|msgId|receiverUsername
    */
-  async _handleAck(line) {
-    const parts = line.split('|');
-    if (parts.length < 3) return;
-
-    const [, msgId, receiverUsername] = parts;
-    console.log(`[LoRa] 🔔 ACK received for msgId=${msgId} from ${receiverUsername}`);
-
+  async _handleAck(msgId, receiverUsername) {
     try {
       const message = await Message.findOneAndUpdate(
         { 'loraMetadata.msgId': msgId, status: { $in: ['queued', 'sent'] } },
